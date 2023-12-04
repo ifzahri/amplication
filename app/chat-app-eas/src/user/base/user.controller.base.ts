@@ -48,8 +48,34 @@ export class UserControllerBase {
   })
   async create(@common.Body() data: UserCreateInput): Promise<User> {
     return await this.service.create({
-      data: data,
+      data: {
+        ...data,
+
+        channels: data.channels
+          ? {
+              connect: data.channels,
+            }
+          : undefined,
+
+        chat: data.chat
+          ? {
+              connect: data.chat,
+            }
+          : undefined,
+      },
       select: {
+        channels: {
+          select: {
+            id: true,
+          },
+        },
+
+        chat: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         firstName: true,
         id: true,
@@ -78,6 +104,18 @@ export class UserControllerBase {
     return this.service.findMany({
       ...args,
       select: {
+        channels: {
+          select: {
+            id: true,
+          },
+        },
+
+        chat: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         firstName: true,
         id: true,
@@ -107,6 +145,18 @@ export class UserControllerBase {
     const result = await this.service.findOne({
       where: params,
       select: {
+        channels: {
+          select: {
+            id: true,
+          },
+        },
+
+        chat: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         firstName: true,
         id: true,
@@ -143,8 +193,34 @@ export class UserControllerBase {
     try {
       return await this.service.update({
         where: params,
-        data: data,
+        data: {
+          ...data,
+
+          channels: data.channels
+            ? {
+                connect: data.channels,
+              }
+            : undefined,
+
+          chat: data.chat
+            ? {
+                connect: data.chat,
+              }
+            : undefined,
+        },
         select: {
+          channels: {
+            select: {
+              id: true,
+            },
+          },
+
+          chat: {
+            select: {
+              id: true,
+            },
+          },
+
           createdAt: true,
           firstName: true,
           id: true,
@@ -182,6 +258,18 @@ export class UserControllerBase {
       return await this.service.delete({
         where: params,
         select: {
+          channels: {
+            select: {
+              id: true,
+            },
+          },
+
+          chat: {
+            select: {
+              id: true,
+            },
+          },
+
           createdAt: true,
           firstName: true,
           id: true,

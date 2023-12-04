@@ -19,6 +19,7 @@ import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
 import * as common from "@nestjs/common";
 import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { Public } from "../../decorators/public.decorator";
 import { CreateUserArgs } from "./CreateUserArgs";
 import { UpdateUserArgs } from "./UpdateUserArgs";
 import { DeleteUserArgs } from "./DeleteUserArgs";
@@ -26,6 +27,8 @@ import { UserCountArgs } from "./UserCountArgs";
 import { UserFindManyArgs } from "./UserFindManyArgs";
 import { UserFindUniqueArgs } from "./UserFindUniqueArgs";
 import { User } from "./User";
+import { Channel } from "../../channel/base/Channel";
+import { Chat } from "../../chat/base/Chat";
 import { UserService } from "../user.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => User)
@@ -86,7 +89,21 @@ export class UserResolverBase {
   async createUser(@graphql.Args() args: CreateUserArgs): Promise<User> {
     return await this.service.create({
       ...args,
-      data: args.data,
+      data: {
+        ...args.data,
+
+        channels: args.data.channels
+          ? {
+              connect: args.data.channels,
+            }
+          : undefined,
+
+        chat: args.data.chat
+          ? {
+              connect: args.data.chat,
+            }
+          : undefined,
+      },
     });
   }
 
@@ -101,7 +118,21 @@ export class UserResolverBase {
     try {
       return await this.service.update({
         ...args,
-        data: args.data,
+        data: {
+          ...args.data,
+
+          channels: args.data.channels
+            ? {
+                connect: args.data.channels,
+              }
+            : undefined,
+
+          chat: args.data.chat
+            ? {
+                connect: args.data.chat,
+              }
+            : undefined,
+        },
       });
     } catch (error) {
       if (isRecordNotFoundError(error)) {
@@ -130,5 +161,40 @@ export class UserResolverBase {
       }
       throw error;
     }
+  }
+
+  @Public()
+  @graphql.ResolveField(() => Channel, {
+    nullable: true,
+    name: "channels",
+  })
+  async resolveFieldChannels(
+    @graphql.Parent() parent: User
+  ): Promise<Channel | null> {
+    const result = await this.service.getChannels(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => Chat, {
+    nullable: true,
+    name: "chat",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Chat",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldChat(@graphql.Parent() parent: User): Promise<Chat | null> {
+    const result = await this.service.getChat(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 }

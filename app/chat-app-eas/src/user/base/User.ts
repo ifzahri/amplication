@@ -11,14 +11,34 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString, IsOptional } from "class-validator";
+import { Channel } from "../../channel/base/Channel";
+import { ValidateNested, IsOptional, IsDate, IsString } from "class-validator";
 import { Type } from "class-transformer";
+import { Chat } from "../../chat/base/Chat";
 import { IsJSONValue } from "@app/custom-validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { JsonValue } from "type-fest";
 
 @ObjectType()
 class User {
+  @ApiProperty({
+    required: false,
+    type: () => Channel,
+  })
+  @ValidateNested()
+  @Type(() => Channel)
+  @IsOptional()
+  channels?: Channel | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => Chat,
+  })
+  @ValidateNested()
+  @Type(() => Chat)
+  @IsOptional()
+  chat?: Chat | null;
+
   @ApiProperty({
     required: true,
   })
