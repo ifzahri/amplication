@@ -1,0 +1,41 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  channels  Channel?
+  chat      Chat?    @relation(fields: [chatId], references: [id])
+  chatId    String?  @db.ObjectId
+  createdAt DateTime @default(now())
+  firstName String?
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  lastName  String?
+  password  String
+  roles     Json
+  updatedAt DateTime @updatedAt
+  username  String   @unique
+}
+
+model Channel {
+  createdAt        DateTime @default(now())
+  description      String   @unique
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  Members          User     @relation(fields: [members_channels], references: [id])
+  members_channels String   @unique @db.ObjectId
+  messages         String
+  updatedAt        DateTime @updatedAt
+}
+
+model Chat {
+  content   String
+  createdAt DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  updatedAt DateTime @updatedAt
+  usersFrom User[]
+  usersTo   String
+}
